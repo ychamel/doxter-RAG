@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "deck-summarizer-frontend"
+version = "0.1.0"
+description = ""
+authors = ["ychamel <ychamel@hotmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pandas = "^2.2.2"
+streamlit = "^1.34.0"
+pillow = "^10.3.0"
+langchain = "^0.1.17"
+openai = "^1.26.0"
+python-dotenv = "^1.0.1"
+langchain-openai = "^0.1.6"
+faiss-cpu = "^1.8.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
