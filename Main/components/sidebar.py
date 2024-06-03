@@ -101,7 +101,7 @@ def sidebar():
         st.markdown("---")
         st.markdown("# About")
         st.markdown(
-            "📖Synapse DeckSummarizer allows you to ask questions about your "
+            "📖Doxter RAG allows you to ask questions about your "
             "documents and get accurate answers with instant citations. "
         )
         st.markdown("---")

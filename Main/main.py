@@ -15,12 +15,12 @@ VECTOR_STORE = "faiss"
 MODEL = "openai"
 
 # init
-st.set_page_config(page_title="Synapse Deck Summarizer", page_icon="📖", layout="wide")
+st.set_page_config(page_title="Doxter RAG", page_icon="📖", layout="wide")
 # image
 image = Image.open('Main/assets/logo.png')
 st.image(image)
 # Title
-st.header("Synapse Deck Summarizer")
+st.header("Doxter RAG")
 
 # sidebar
 sidebar()
