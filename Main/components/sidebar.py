@@ -129,6 +129,8 @@ def delete_files():
     chunked_files = []
     selected_files = st.session_state.get('FILES')
     for file in selected_files:
+        if file['Load'] == False:
+            continue
         api.delete(file['id'])
 
 def load_files(all=False):
