@@ -78,6 +78,17 @@ class BackendAPI:
             return output
         return None
 
+    def delete(self, id):
+        if not self.is_authenticated():
+            return False
+
+        endpoint = f'data/files/{id}/'
+        r = requests.delete(url=self.base_url + endpoint, headers=self.authentication,
+                         params={})
+        if r.status_code == 204:
+            return True
+        return False
+
     def download(self, id):
         if not self.is_authenticated():
             return False

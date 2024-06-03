@@ -95,7 +95,9 @@ def sidebar():
                 )
                 Files = st.data_editor(df)
                 st.session_state['FILES'] = list(Files.to_dict('index').values())
-
+            delete_selected = st.button('delete selected',type="primary")
+            if delete_selected:
+                delete_files()
         st.markdown("---")
         st.markdown("# About")
         st.markdown(
@@ -119,6 +121,15 @@ def update_files():
     st.session_state['FILES'] = files
     st.rerun()
 
+
+def delete_files():
+    # chunked_files = st.session_state.get("CHUNKED_FILES")
+    api = st.session_state.get("BACKEND_API")
+    # get all files
+    chunked_files = []
+    selected_files = st.session_state.get('FILES')
+    for file in selected_files:
+        api.delete(file['id'])
 
 def load_files(all=False):
     openai_key = st.session_state.get('OPENAI_API_KEY')
