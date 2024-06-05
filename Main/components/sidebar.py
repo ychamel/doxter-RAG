@@ -56,7 +56,7 @@ def sidebar():
             uploaded_files = st.file_uploader(
                 "Upload file of the following format: pdf, docx, pptx, xlsx or txt",
                 type=["pdf", "docx", "txt", "pptx", "xlsx"],
-                accept_multiple_files=True
+                accept_multiple_files=False
             )
             if uploaded_files:
                 col1, col2 = st.columns([1, 1])
@@ -66,12 +66,16 @@ def sidebar():
                     upload_ocr_btn = st.button('Upload OCR')
                 if upload_btn:
                     # upload file to DB
-                    for file in uploaded_files:
-                        backend_api.upload(file.name, file)
+                    #for file in uploaded_files:
+                    file = uploaded_files
+                    backend_api.upload(file.name, file)
+                    update_files()
                 if upload_ocr_btn:
                     # upload file to DB using OCR
-                    for file in uploaded_files:
-                        backend_api.upload(file.name, file, ocr=True)
+                    #for file in uploaded_files:
+                    file = uploaded_files
+                    backend_api.upload(file.name, file, ocr=True)
+                    update_files()
 
             st.markdown("## Your Files:")
             col1, col2, col3 = st.columns([1, 1, 1])
@@ -94,10 +98,15 @@ def sidebar():
                     files
                 )
                 Files = st.data_editor(df)
-                st.session_state['FILES'] = list(Files.to_dict('index').values())
-            delete_selected = st.button('delete selected',type="primary")
+                # update cache of dataframe
+                # st.session_state['FILES'] = list(Files.to_dict('index').values())
+                # get loaded files
+                st.session_state['LOADED'] = [id for id, loaded in zip(Files.id, Files.Load) if loaded]
+
+            delete_selected = st.button('delete selected', type="primary")
             if delete_selected:
                 delete_files()
+                uploaded_files()
         st.markdown("---")
         st.markdown("# About")
         st.markdown(
@@ -111,13 +120,14 @@ def sidebar():
 
 def update_files():
     API = st.session_state.get("BACKEND_API", None)
+    loaded = st.session_state.get('LOADED', [])
     if not API:
         return None
     files = API.get_files()
     if files is None or files is False:
         return None
     for file in files:
-        file['Load'] = False
+        file['Load'] = file['id'] in loaded
     st.session_state['FILES'] = files
     st.rerun()
 
@@ -127,11 +137,13 @@ def delete_files():
     api = st.session_state.get("BACKEND_API")
     # get all files
     chunked_files = []
-    selected_files = st.session_state.get('FILES')
-    for file in selected_files:
-        if file['Load'] == False:
+    files = st.session_state.get('FILES')
+    selected_files = st.session_state.get('LOADED', [])
+    for file in files:
+        if file['id'] not in selected_files:
             continue
         api.delete(file['id'])
+
 
 def load_files(all=False):
     openai_key = st.session_state.get('OPENAI_API_KEY')
@@ -157,17 +169,20 @@ def get_new_chunksed_files(all=False):
     api = st.session_state.get("BACKEND_API")
     # get all files
     chunked_files = []
-    selected_files = st.session_state.get('FILES')
-    for file in selected_files:
+    files = st.session_state.get('FILES')
+    selected_files = st.session_state.get('LOADED', [])
+
+    for file in files:
         if file['status_display'] != "Complete":
             continue
-        if not all and file['Load'] == False:
+        if not all and file['id'] not in selected_files:
             continue
 
         file_chunk = api.load(file['id'])
         chunked_files.append(file_chunk)
     # st.session_state["CHUNKED_FILES"] = chunked_files
     return chunked_files
+
 
 def get_summary():
     return

@@ -40,6 +40,7 @@ url = None
 
 files = st.session_state.get("FILES")
 selected_files = st.session_state.get("SELECTED_FILES")
+folder_index = st.session_state.get("FOLDER_INDEX", None)
 
 # wait for input
 if (not url and not uploaded_files and st.session_state.get("FILES", None) == None) or not openai_api_key:
@@ -47,7 +48,9 @@ if (not url and not uploaded_files and st.session_state.get("FILES", None) == No
 
 if not is_open_ai_key_valid(openai_api_key):
     st.stop()
-
+# check if vector DB loaded
+if folder_index is None:
+    st.stop()
 # open chat area
 with st.form(key="qa_form"):
     query = st.text_area("Ask a question about the SELECTED document")
@@ -76,7 +79,6 @@ if submit:
     search_query = query + ' \n '
     # if summary:
     #     search_query += get_query_answer(query, summary)
-    folder_index = st.session_state.get("FOLDER_INDEX")
     summary = st.session_state.get("SUMMARY")
     search_query += get_query_answer(query, summary)
 
