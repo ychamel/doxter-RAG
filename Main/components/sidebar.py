@@ -198,7 +198,16 @@ def get_new_chunksed_files(all=False):
     return chunked_files
 
 
-def get_summary():
-    return
-    summary = "ليوان للتطوير العقاري هي شركة تعمل في مجال تطوير المشاريع العقارية والاستثمار العقاري. تقدم الشركة خدماتها في مجالات البناء والتصميم والتسويق والاستثمار العقاري"
+def get_summary(all=False):
+    files = st.session_state.get('FILES')
+    selected_files = st.session_state.get('LOADED', [])
+    file_summary = {}
+    for file in files:
+        if file['status_display'] != "Complete":
+            continue
+        if not all and file['id'] not in selected_files:
+            continue
+
+        file_summary[file['name']] = file['summary']
+    summary = f"The following are the loaded files and their description: \n {file_summary}"
     st.session_state["SUMMARY"] = summary
