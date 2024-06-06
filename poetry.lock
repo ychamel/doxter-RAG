@@ -2104,6 +2104,20 @@ watchdog = {version = ">=2.1.5", markers = "platform_system != \"Darwin\""}
 snowflake = ["snowflake-connector-python (>=2.8.0)", "snowflake-snowpark-python (>=0.9.0)"]
 
 [[package]]
+name = "streamlit-tags"
+version = "1.2.8"
+description = "Tags custom component for Streamlit"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "streamlit_tags-1.2.8-py3-none-any.whl", hash = "sha256:c71b10666f3fce67d8e0b3c089aa50dc48830d310223fb88005b08f157586f95"},
+    {file = "streamlit_tags-1.2.8.tar.gz", hash = "sha256:9ea46b21f206dc73164e59e3c800a96c863c90af57afde20115f001a6d986583"},
+]
+
+[package.dependencies]
+streamlit = ">=0.63"
+
+[[package]]
 name = "tenacity"
 version = "8.3.0"
 description = "Retry code until it succeeds"
@@ -2433,4 +2447,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "02eac395be9ea257ba4c95f57b9b03c65220c1ad087975720b0d831a07b5bd19"
+content-hash = "6c384228cbf3062a39b07182aab4aca27bbab1227c2f8d4ddf93e19870b388c2"

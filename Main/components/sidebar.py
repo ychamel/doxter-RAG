@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+from streamlit_tags import st_tags_sidebar
 
 from Main.components.faq import faq
 from dotenv import load_dotenv
@@ -59,6 +60,12 @@ def sidebar():
                 accept_multiple_files=False
             )
             if uploaded_files:
+                tags = st_tags_sidebar(
+                    label='',
+                    text='File Tags...',
+                    value=[],
+                    maxtags=4,
+                    key='1')
                 col1, col2 = st.columns([1, 1])
                 with col1:
                     upload_btn = st.button('Upload')
@@ -66,18 +73,24 @@ def sidebar():
                     upload_ocr_btn = st.button('Upload OCR')
                 if upload_btn:
                     # upload file to DB
-                    #for file in uploaded_files:
+                    # for file in uploaded_files:
                     file = uploaded_files
-                    backend_api.upload(file.name, file)
+                    backend_api.upload(file.name, file, tags=tags)
                     update_files()
                 if upload_ocr_btn:
                     # upload file to DB using OCR
-                    #for file in uploaded_files:
+                    # for file in uploaded_files:
                     file = uploaded_files
-                    backend_api.upload(file.name, file, ocr=True)
+                    backend_api.upload(file.name, file, tags=tags, ocr=True)
                     update_files()
 
             st.markdown("## Your Files:")
+            filter_tags = st_tags_sidebar(
+                label='',
+                text='Filter Tags...',
+                value=[],
+                maxtags=4,
+                key='2')
             col1, col2, col3 = st.columns([1, 1, 1])
             with col1:
                 update = st.button('update')
@@ -94,8 +107,9 @@ def sidebar():
             if load_all:
                 load_files(all=True)
             if files:
+                displayed_files = [file for file in files if set(filter_tags) <= set(file.get('tags', []))]
                 df = pd.DataFrame(
-                    files
+                    displayed_files
                 )
                 Files = st.data_editor(df)
                 # update cache of dataframe
@@ -106,7 +120,7 @@ def sidebar():
             delete_selected = st.button('delete selected', type="primary")
             if delete_selected:
                 delete_files()
-                uploaded_files()
+                update_files()
         st.markdown("---")
         st.markdown("# About")
         st.markdown(

@@ -106,3 +106,13 @@ class BackendAPI:
             return False
 
         pass
+
+    def get_tags(self):
+        if not self.is_authenticated():
+            return False
+        endpoint = "/data/tags/"
+        r = requests.get(url=self.base_url + endpoint, headers=self.authentication,
+                         params={})
+        if r.status_code == 200:
+            return r.content
+        return None
