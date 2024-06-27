@@ -6,6 +6,9 @@ from Main.core.FileParser import File
 
 
 class BackendAPI:
+    """
+    API class to interface with OCR-RAG backend
+    """
     def __init__(self, url=None):
         self.user = None
         self.authentication = None
@@ -36,11 +39,19 @@ class BackendAPI:
         return False
 
     def is_authenticated(self):
+        """
+        Check if authenticated
+        :return:
+        """
         if self.authentication is None:
             return False
         return True
 
     def get_files(self):
+        """
+        get all user files and their status in the database
+        :return:
+        """
         if not self.is_authenticated():
             return False
         endpoint = 'data/files/'
@@ -52,6 +63,9 @@ class BackendAPI:
         return None
 
     def upload(self, file_name, file, tags=[], ocr=False):
+        """
+        upload a file, and indigate its tags and whether it needs OCR to be parsed or not
+        """
         if not self.is_authenticated():
             return False
         endpoint = 'data/files/'
@@ -61,9 +75,11 @@ class BackendAPI:
         r = requests.post(url=self.base_url + endpoint, files={'file': file}, data=data, headers=self.authentication)
         if r.status_code == 201:
             return
-        pass
 
     def load(self, id):
+        """
+        Load parsed file by id
+        """
         if not self.is_authenticated():
             return False
 
@@ -79,6 +95,9 @@ class BackendAPI:
         return None
 
     def delete(self, id):
+        """
+        delete file by id
+        """
         if not self.is_authenticated():
             return False
 
@@ -90,6 +109,9 @@ class BackendAPI:
         return False
 
     def download(self, id):
+        """
+        download raw file as uploaded
+        """
         if not self.is_authenticated():
             return False
         endpoint = f'data/download-file/{id}/original/'
@@ -104,10 +126,12 @@ class BackendAPI:
     def filter(self):
         if not self.is_authenticated():
             return False
-
         pass
 
     def get_tags(self):
+        """
+        get all user tags
+        """
         if not self.is_authenticated():
             return False
         endpoint = "/data/tags/"

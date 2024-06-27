@@ -1,14 +1,10 @@
 import os
 from typing import Any, List
 
-from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 from openai import OpenAI
 
-from Main.core.prompts import STUFF_PROMPT
 from langchain.docstore.document import Document
-from langchain.chat_models import ChatOpenAI
 from Main.core.embedding import FolderIndex
-from Main.core.debug import FakeChatModel
 from pydantic.v1 import BaseModel
 
 
@@ -23,6 +19,15 @@ class AnswerWithSources(BaseModel):
 
 
 def get_relevant_docs(query: str, search_query: str, folder_index: FolderIndex) -> AnswerWithSources:
+    """
+    get the query to be answered, a search query used for searching the vector DB, and the Vector DB.
+    Get relevant docs from the VectorDB using the search query, and answer the query using these results.
+    :param query: base query to be answered
+    :param search_query: key words to be used to search the vector DB
+    :param folder_index: VectorDB to be used for searching and reference
+    :return: Object Class containing answer and source documents list
+    """
+
     relevant_docs = folder_index.index.similarity_search(search_query)
 
     messages = [
@@ -45,56 +50,6 @@ def get_relevant_docs(query: str, search_query: str, folder_index: FolderIndex) 
     return AnswerWithSources(answer=answer, sources=relevant_docs)
 
 
-def query_folder(
-        query: str,
-        folder_index: FolderIndex,
-        return_all: bool = False,
-        model: str = "openai",
-        **model_kwargs: Any,
-) -> AnswerWithSources:
-    """Queries a folder index for an answer.
-
-    Args:
-        query (str): The query to search for.
-        folder_index (FolderIndex): The folder index to search.
-        return_all (bool): Whether to return all the documents from the embedding or
-        just the sources for the answer.
-        model (str): The model to use for the answer generation.
-        **model_kwargs (Any): Keyword arguments for the model.
-
-    Returns:
-        AnswerWithSources: The answer and the source documents.
-    """
-    supported_models = {
-        "openai": ChatOpenAI,
-        "debug": FakeChatModel,
-    }
-
-    if model in supported_models:
-        llm = supported_models[model](**model_kwargs)
-    else:
-        raise ValueError(f"Model {model} not supported.")
-
-    chain = load_qa_with_sources_chain(
-        llm=llm,
-        chain_type="stuff",
-        prompt=STUFF_PROMPT,
-    )
-
-    relevant_docs = folder_index.index.similarity_search(query)
-    result = chain(
-        {"input_documents": relevant_docs, "question": query}, return_only_outputs=True
-    )
-    sources = relevant_docs
-
-    if not return_all:
-        sources = get_sources(result["output_text"], folder_index)
-
-    answer = result["output_text"].split("SOURCES: ")[0]
-
-    return AnswerWithSources(answer=answer, sources=sources)
-
-
 def get_sources(answer: str, folder_index: FolderIndex) -> List[Document]:
     """Retrieves the docs that were used to answer the question the generated answer."""
 
@@ -109,7 +64,13 @@ def get_sources(answer: str, folder_index: FolderIndex) -> List[Document]:
     return source_docs
 
 
-def get_query_answer(query, summary):
+def get_relevant_keywords(query, summary):
+    """
+    gets a query about a topic, a summary of said topic, and returns keywords that would help search for answers for that query.
+    :param query: Question about a certain topic
+    :param summary: summary of the files stored in the vector DB
+    :return: Keywords to search for in the vector DB
+    """
     messages = [
         {"role": "system",
          "content": "You are an answer generator for a search engine, you will be given a question and you'll return a list of relevant keywords to look for. \n"

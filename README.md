@@ -4,20 +4,18 @@
 
 ## Project Structure:
 
-* main.py 
-* ui.py
-* core/
-  * api.py
-  * chunking.py
-  * debug.py
-  * embedding.py
-  * FileParser.py
-  * prompts.py
-  * qa.py
-  * summary.py
+* main.py | *main file responsible for streamlit UI components*
+* ui.py | *ui components*
+* core/ 
+  * api.py | *class interface for backend api*
+  * debug.py | *debug class*
+  * embedding.py | *class for embedding docs in vectorDB*
+  * FileParser.py | *Base File class for retaining parsed info and serialization*
+  * qa.py | *functions for question and answering tasks*
+  * summary.py | *functions for summarization and analysis tasks*
 * components/
-  * faq.py
-  * sidebar.py
+  * faq.py | *general FAQ in the sidebar*
+  * sidebar.py | *streamlit sidebar components for handling app state*
 * assets/
 
 ## Project Setup:

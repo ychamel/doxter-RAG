@@ -9,7 +9,7 @@ from Main.ui import (
     is_open_ai_key_valid,
 )
 
-from Main.core.qa import get_query_answer, get_relevant_docs
+from Main.core.qa import get_relevant_keywords, get_relevant_docs
 
 VECTOR_STORE = "faiss"
 MODEL = "openai"
@@ -80,7 +80,7 @@ if submit:
     # if summary:
     #     search_query += get_query_answer(query, summary)
     summary = st.session_state.get("SUMMARY")
-    search_query += get_query_answer(query, summary)
+    search_query += get_relevant_keywords(query, summary)
 
     result = get_relevant_docs(
         folder_index=folder_index,

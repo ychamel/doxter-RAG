@@ -1,28 +1,17 @@
 import json
 import os
 import openai
-import tiktoken
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from openai import OpenAI
 
 from Main.core.FileParser import File
-from Main.core.qa import query_folder, get_relevant_docs, get_query_answer
+from Main.core.qa import get_relevant_keywords
 import streamlit as st
 
 client = OpenAI(
     # This is the default and can be omitted
     api_key=os.environ.get("OPENAI_API_KEY"),
 )
-
-
-# create the length function
-def tiktoken_len(text: str):
-    tokens = tiktoken.get_encoding('p50k_base').encode(
-        text,
-        disallowed_special=()
-    )
-    return len(tokens)
 
 
 # retrieve files from pinecone
@@ -34,7 +23,7 @@ def retrieve(query: str, index):
     """
     res = openai.Embedding.create(
         input=[query],
-        engine="text-embedding-ada-002"
+        engine="text-embedding-3-small"
     )
 
     # retrieve from Pinecone
@@ -60,42 +49,8 @@ def retrieve(query: str, index):
     return prompt
 
 
-def store_data(data, embed_model, index):
-    from tqdm.auto import tqdm
-    from time import sleep
-
-    batch_size = 100  # how many embeddings we create and insert at onceq
-    for i in tqdm(range(0, len(data), batch_size)):
-        # find end of batch
-        i_end = min(len(data), i + batch_size)
-        meta_batch = data[i:i_end]
-        # get ids
-        ids_batch = [x['id'] for x in meta_batch]
-        # get texts to encode
-        texts = [x['text'] for x in meta_batch]
-        # create embeddings (try-except added to avoid RateLimitError)
-        try:
-            res = openai.Embedding.create(input=texts, engine=embed_model)
-        except:
-            done = False
-            while not done:
-                sleep(5)
-                try:
-                    res = openai.Embedding.create(input=texts, engine=embed_model)
-                    done = True
-                except:
-                    pass
-        embeds = [record['embedding'] for record in res['data']]
-        # cleanup metadata
-        meta_batch = [{
-            'text': x['text'],
-        } for x in meta_batch]
-        to_upsert = list(zip(ids_batch, embeds, meta_batch))
-        # upsert to Pinecone
-        index.upsert(vectors=to_upsert)
-
-
 def complete(prompt):
+    """ generate a report based on a given prompt """
     messages = [
         {"role": "system",
          "content": "You are an excelent analyst that writes report based on a given topic and the information supplied regarding it."
@@ -113,6 +68,12 @@ def complete(prompt):
 
 
 def write_analysis(topic, folder_index):
+    """
+    write a paragraph based on the given topic
+    :param topic:
+    :param folder_index:
+    :return:
+    """
     # retrieve relevant data
     query = f"{topic}"
     retrieved = retrieve(query, folder_index)
@@ -124,6 +85,11 @@ def write_analysis(topic, folder_index):
 
 
 def write_report(folder_index):
+    """
+    Generate a financial report based on the files stored in the VectorDB
+    :param folder_index:
+    :return:
+    """
     topics = {
         "Company Overview": "The Company Overview, this includes Company Headcount, Number of Clients, Geography Presence, Number of Products, and Key Milestones and Figures ",
         "Market Analysis": "The market analysis for the company and a detailed assessment of the business's target market and the competitive landscape within their specific industry",
@@ -402,7 +368,7 @@ def generate_company_report():
     Report = ""
     for topic, info in Topics.items():
         topic_info = f"what info can you find about {topic}?"
-        search = get_query_answer(topic_info, "")
+        search = get_relevant_keywords(topic_info, "")
         relevant_docs = folder_index.index.similarity_search(topic_info + '\n ' + search, k=8)
         docs = []
         for doc in relevant_docs:
